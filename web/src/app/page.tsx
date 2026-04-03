@@ -1,10 +1,46 @@
-import { familyTree } from "@/lib/data";
+"use client";
+
+import { useState, useEffect } from "react";
+import { Person } from "@/lib/types";
+import {
+  getStoredFamilyTree,
+  getNextId,
+  addPerson,
+  updatePerson,
+} from "@/lib/store";
 import FamilyTreeView from "@/components/FamilyTreeView";
+import PersonFormModal from "@/components/PersonFormModal";
 
 export default function Home() {
-  const livingCount = familyTree.members.filter((m) => m.isLiving).length;
-  const totalCount = familyTree.members.length;
-  const generations = [...new Set(familyTree.members.map((m) => m.generation))];
+  const [members, setMembers] = useState<Person[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editTarget, setEditTarget] = useState<Person | undefined>(undefined);
+
+  useEffect(() => {
+    setMembers(getStoredFamilyTree().members);
+  }, []);
+
+  const familyTree = getStoredFamilyTree();
+  const livingCount = members.filter((m) => m.isLiving).length;
+  const totalCount = members.length;
+  const generations = [...new Set(members.map((m) => m.generation))];
+
+  function handleAdd() {
+    setEditTarget(undefined);
+    setShowForm(true);
+  }
+
+  function handleSave(person: Person) {
+    if (editTarget) {
+      const updated = updatePerson(person);
+      setMembers(updated);
+    } else {
+      const updated = addPerson(person);
+      setMembers(updated);
+    }
+    setShowForm(false);
+    setEditTarget(undefined);
+  }
 
   return (
     <div className="flex flex-col h-screen">
@@ -41,14 +77,45 @@ export default function Home() {
               </div>
               <div className="text-gray-500">세대</div>
             </div>
+            <button
+              onClick={handleAdd}
+              className="ml-4 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors flex items-center gap-1.5"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <line x1="8" y1="3" x2="8" y2="13" />
+                <line x1="3" y1="8" x2="13" y2="8" />
+              </svg>
+              인물 추가
+            </button>
           </div>
         </div>
       </header>
 
       {/* 가계도 영역 */}
       <main className="flex-1 overflow-hidden">
-        <FamilyTreeView />
+        <FamilyTreeView members={members} onEditPerson={(p) => { setEditTarget(p); setShowForm(true); }} />
       </main>
+
+      {/* 인물 추가/수정 모달 */}
+      {showForm && (
+        <PersonFormModal
+          person={editTarget}
+          members={members}
+          nextId={getNextId(members)}
+          onSave={handleSave}
+          onClose={() => {
+            setShowForm(false);
+            setEditTarget(undefined);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { familyTree, getPerson, getSpouse, getChildren } from "@/lib/data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import EditPersonButton from "@/components/EditPersonButton";
 
 export function generateStaticParams() {
   return familyTree.members.map((m) => ({ id: m.id }));
@@ -26,7 +27,7 @@ export default async function PersonPage({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 상단 네비게이션 */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-3">
+      <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         <Link
           href="/"
           className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -36,6 +37,7 @@ export default async function PersonPage({
           </svg>
           가계도로 돌아가기
         </Link>
+        <EditPersonButton personId={person.id} />
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-8">

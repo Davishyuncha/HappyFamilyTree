@@ -2,7 +2,6 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Person } from "@/lib/types";
-import { familyTree, getChildren, getSpouse } from "@/lib/data";
 import Link from "next/link";
 
 // 트리 노드 위치 계산용 타입
@@ -20,12 +19,15 @@ const HORIZONTAL_GAP = 30;
 const VERTICAL_GAP = 60;
 const SPOUSE_GAP = 10;
 
-function buildTree(person: Person): TreeNode {
-  const children = getChildren(person.id);
-  const spouse = getSpouse(person);
+function buildTree(person: Person, allMembers: Person[]): TreeNode {
+  const children = allMembers.filter((m) => m.fatherId === person.id);
+  const spouseId = person.spouseIds?.[0];
+  const spouse = spouseId
+    ? allMembers.find((m) => m.id === spouseId)
+    : undefined;
   const childNodes = children
     .filter((c) => c.gender === "male" || c.gender === "female")
-    .map((child) => buildTree(child));
+    .map((child) => buildTree(child, allMembers));
 
   return {
     person,
@@ -96,11 +98,13 @@ function PersonCard({
   x,
   y,
   isSpouse,
+  onEdit,
 }: {
   person: Person;
   x: number;
   y: number;
   isSpouse?: boolean;
+  onEdit?: (person: Person) => void;
 }) {
   const genColor = getGenerationColor(person.generation);
   const borderColor = person.gender === "male" ? "#3B82F6" : "#EC4899";
@@ -233,12 +237,56 @@ function PersonCard({
             배위
           </text>
         )}
+        {/* 수정 버튼 */}
+        {onEdit && (
+          <g
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onEdit(person);
+            }}
+            className="cursor-pointer"
+            opacity={0.5}
+            style={{ transition: "opacity 0.2s" }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as SVGGElement).setAttribute("opacity", "1");
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as SVGGElement).setAttribute("opacity", "0.5");
+            }}
+          >
+            <rect
+              x={NODE_WIDTH - 28}
+              y={NODE_HEIGHT - 28}
+              width={22}
+              height={22}
+              rx={6}
+              fill="#EEF2FF"
+              stroke="#6366F1"
+              strokeWidth={1}
+            />
+            <text
+              x={NODE_WIDTH - 17}
+              y={NODE_HEIGHT - 13}
+              textAnchor="middle"
+              fontSize={12}
+              fill="#6366F1"
+            >
+              &#9998;
+            </text>
+          </g>
+        )}
       </g>
     </Link>
   );
 }
 
-export default function FamilyTreeView() {
+interface FamilyTreeViewProps {
+  members: Person[];
+  onEditPerson?: (person: Person) => void;
+}
+
+export default function FamilyTreeView({ members, onEditPerson }: FamilyTreeViewProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewBox, setViewBox] = useState({ x: 0, y: 0, w: 1400, h: 900 });
@@ -247,10 +295,10 @@ export default function FamilyTreeView() {
   const [selectedGen, setSelectedGen] = useState<number | null>(null);
 
   // 트리 빌드
-  const roots = familyTree.members.filter(
+  const roots = members.filter(
     (m) => !m.fatherId && !m.motherId && m.gender === "male"
   );
-  const trees = roots.map((root) => buildTree(root));
+  const trees = roots.map((root) => buildTree(root, members));
 
   let offsetX = 60;
   for (const tree of trees) {
@@ -268,7 +316,7 @@ export default function FamilyTreeView() {
   );
 
   // 세대 목록
-  const generations = [...new Set(familyTree.members.map((m) => m.generation))].sort(
+  const generations = [...new Set(members.map((m) => m.generation))].sort(
     (a, b) => a - b
   );
 
@@ -566,6 +614,7 @@ export default function FamilyTreeView() {
                 person={node.person}
                 x={node.x}
                 y={node.y}
+                onEdit={onEditPerson}
               />
               {node.spouse && (
                 <g opacity={isHighlighted(node.spouse) ? 1 : 0.25}>
@@ -574,6 +623,7 @@ export default function FamilyTreeView() {
                     x={node.x + NODE_WIDTH + SPOUSE_GAP}
                     y={node.y}
                     isSpouse
+                    onEdit={onEditPerson}
                   />
                 </g>
               )}
