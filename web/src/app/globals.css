@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", sans-serif;
+}
+
+/* SVG 카드 호버 효과 */
+svg g[role="button"]:hover rect:first-child {
+  filter: brightness(0.97);
+  stroke-width: 3;
+}
+
+svg g[role="button"]:focus {
+  outline: none;
+}
+
+svg g[role="button"]:focus rect:first-child {
+  stroke-width: 3.5;
+}
