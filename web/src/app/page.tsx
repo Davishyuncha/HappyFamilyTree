@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Person } from "@/lib/types";
 import {
   getStoredFamilyTree,
@@ -46,54 +47,99 @@ export default function Home() {
     <div className="flex flex-col h-screen">
       {/* 헤더 */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-bold text-lg">
+        <div className="max-w-full mx-auto px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-bold text-base sm:text-lg shrink-0">
               {familyTree.originPlace.charAt(0)}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900">
                 {familyTree.clanName}
               </h1>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500">
                 본관: {familyTree.originPlace} | 시조: {familyTree.founderName}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-6 text-sm">
-            <div className="text-center">
-              <div className="text-lg font-bold text-blue-600">{totalCount}</div>
-              <div className="text-gray-500">전체 인물</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-emerald-600">
-                {livingCount}
+          <div className="flex items-center gap-3 sm:gap-6 text-sm w-full sm:w-auto">
+            <div className="flex items-center gap-3 sm:gap-6">
+              <div className="text-center">
+                <div className="text-base sm:text-lg font-bold text-blue-600">{totalCount}</div>
+                <div className="text-gray-500 text-[10px] sm:text-sm">전체</div>
               </div>
-              <div className="text-gray-500">생존 인물</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-purple-600">
-                {generations.length}
+              <div className="text-center">
+                <div className="text-base sm:text-lg font-bold text-emerald-600">
+                  {livingCount}
+                </div>
+                <div className="text-gray-500 text-[10px] sm:text-sm">생존</div>
               </div>
-              <div className="text-gray-500">세대</div>
+              <div className="text-center">
+                <div className="text-base sm:text-lg font-bold text-purple-600">
+                  {generations.length}
+                </div>
+                <div className="text-gray-500 text-[10px] sm:text-sm">세대</div>
+              </div>
             </div>
-            <button
-              onClick={handleAdd}
-              className="ml-4 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors flex items-center gap-1.5"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+            <div className="flex items-center gap-2 ml-auto sm:ml-4">
+              <Link
+                href="/calendar"
+                className="px-3 sm:px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"
               >
-                <line x1="8" y1="3" x2="8" y2="13" />
-                <line x1="3" y1="8" x2="13" y2="8" />
-              </svg>
-              인물 추가
-            </button>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="hidden sm:block"
+                >
+                  <rect x="2" y="3" width="12" height="11" rx="1.5" />
+                  <path d="M5 1v3M11 1v3M2 7h12" />
+                </svg>
+                캘린더
+              </Link>
+              <Link
+                href="/plaza"
+                className="px-3 sm:px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="hidden sm:block"
+                >
+                  <rect x="2" y="3" width="12" height="10" rx="2" />
+                  <path d="M5 7h6M5 10h4" />
+                </svg>
+                광장
+              </Link>
+              <button
+                onClick={handleAdd}
+                className="px-3 sm:px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <line x1="8" y1="3" x2="8" y2="13" />
+                  <line x1="3" y1="8" x2="13" y2="8" />
+                </svg>
+                <span className="hidden sm:inline">인물 추가</span>
+                <span className="sm:hidden">추가</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>

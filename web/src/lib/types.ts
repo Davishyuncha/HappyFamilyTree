@@ -12,7 +12,8 @@ export interface Person {
   deathDateLunar?: string;
   gender: "male" | "female";
   branch?: string; // 파(派)
-  profilePhoto?: string;
+  profilePhoto?: string; // 대표 사진 (data URL)
+  photos?: string[]; // 추가 사진들 (data URL 배열)
   bio?: string;
   position?: string; // 관직/직업
   burialLocation?: string;

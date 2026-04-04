@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Person } from "@/lib/types";
 
 interface PersonFormModalProps {
@@ -51,6 +51,20 @@ export default function PersonFormModal({
     person?.spouseIds?.join(", ") ?? ""
   );
 
+  // 사진 관리: 대표 사진 + 추가 사진들
+  const [allPhotos, setAllPhotos] = useState<string[]>(() => {
+    const photos: string[] = [];
+    if (person?.profilePhoto) photos.push(person.profilePhoto);
+    if (person?.photos) {
+      for (const p of person.photos) {
+        if (!photos.includes(p)) photos.push(p);
+      }
+    }
+    return photos;
+  });
+  const [primaryIndex, setPrimaryIndex] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // ESC 키로 닫기
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -65,6 +79,58 @@ export default function PersonFormModal({
     value: string | number | boolean
   ) {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function resizeImage(file: File): Promise<string> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const maxSize = 300;
+          const canvas = document.createElement("canvas");
+          let w = img.width;
+          let h = img.height;
+          if (w > maxSize || h > maxSize) {
+            if (w > h) { h = (h / w) * maxSize; w = maxSize; }
+            else { w = (w / h) * maxSize; h = maxSize; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const newPhotos: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      newPhotos.push(await resizeImage(files[i]));
+    }
+    setAllPhotos((prev) => [...prev, ...newPhotos]);
+    // 첫 사진이 없었으면 대표로 설정
+    if (allPhotos.length === 0) setPrimaryIndex(0);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function handleRemovePhoto(index: number) {
+    setAllPhotos((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      // 대표 사진 인덱스 보정
+      if (index === primaryIndex) setPrimaryIndex(0);
+      else if (index < primaryIndex) setPrimaryIndex((p) => p - 1);
+      return next;
+    });
+  }
+
+  function handleSetPrimary(index: number) {
+    setPrimaryIndex(index);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -102,6 +168,10 @@ export default function PersonFormModal({
       burialDirection: form.burialDirection || undefined,
       burialJoint: form.burialJoint || undefined,
       spouseClan: form.spouseClan || undefined,
+      profilePhoto: allPhotos.length > 0 ? allPhotos[primaryIndex] : undefined,
+      photos: allPhotos.length > 1
+        ? allPhotos.filter((_, i) => i !== primaryIndex)
+        : undefined,
       isLiving: form.isLiving,
       fatherId: form.fatherId || undefined,
       motherId: form.motherId || undefined,
@@ -140,6 +210,68 @@ export default function PersonFormModal({
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-6">
+          {/* ===== 사진 업로드 (복수) ===== */}
+          <fieldset>
+            <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              사진
+            </legend>
+            <div className="flex flex-wrap gap-3">
+              {allPhotos.map((photo, idx) => (
+                <div key={idx} className="relative group">
+                  <div
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 cursor-pointer transition-colors ${
+                      idx === primaryIndex
+                        ? "border-blue-500 ring-2 ring-blue-200"
+                        : "border-gray-200 hover:border-gray-400"
+                    }`}
+                    onClick={() => handleSetPrimary(idx)}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo}
+                      alt={`사진 ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {idx === primaryIndex && (
+                    <span className="absolute -top-1.5 -left-1.5 bg-blue-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">
+                      대표
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(idx)}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+              {/* 추가 버튼 */}
+              <div
+                className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                  <line x1="10" y1="4" x2="10" y2="16" />
+                  <line x1="4" y1="10" x2="16" y2="10" />
+                </svg>
+                <span className="text-[9px] text-gray-400 mt-1">사진 추가</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-2">
+              여러 장 선택 가능 | 클릭하여 대표 사진 지정 | JPG, PNG (자동 축소)
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+          </fieldset>
+
           {/* ===== 기본 정보 ===== */}
           <fieldset>
             <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">

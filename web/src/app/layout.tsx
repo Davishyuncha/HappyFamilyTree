@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import GlobalNav from "@/components/GlobalNav";
 
 export const metadata: Metadata = {
   title: "연안 차씨 디지털 가승",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-gray-50">{children}</body>
+      <body className="min-h-full flex flex-col bg-gray-50">
+        <GlobalNav />
+        {children}
+      </body>
     </html>
   );
 }

@@ -26,17 +26,8 @@ export default async function PersonPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 네비게이션 */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-        <Link
-          href="/"
-          className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M10.5 13l-5-5 5-5" stroke="currentColor" strokeWidth="2" fill="none" />
-          </svg>
-          가계도로 돌아가기
-        </Link>
+      {/* 상단 도구 바 */}
+      <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-end">
         <EditPersonButton personId={person.id} />
       </nav>
 
