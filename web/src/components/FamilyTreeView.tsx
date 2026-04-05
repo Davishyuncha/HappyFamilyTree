@@ -608,8 +608,8 @@ export default function FamilyTreeView({ members, onEditPerson }: FamilyTreeView
 
   // 트리 빌드
   const roots = members.filter(
-    (m) => !m.fatherId && !m.motherId && m.gender === "male"
-  );
+  (m) => !m.fatherId && !m.motherId
+);
   const trees = roots.map((root) => buildTree(root, members));
 
   let offsetX = 60;
