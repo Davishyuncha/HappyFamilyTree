@@ -8,6 +8,7 @@ import {
   getNextId,
   addPerson,
   updatePerson,
+
 } from "@/lib/store";
 import FamilyTreeView from "@/components/FamilyTreeView";
 import PersonFormModal from "@/components/PersonFormModal";
@@ -30,18 +31,18 @@ export default function Home() {
     setEditTarget(undefined);
     setShowForm(true);
   }
-
-  function handleSave(person: Person) {
-    if (editTarget) {
-      const updated = updatePerson(person);
-      setMembers(updated);
-    } else {
-      const updated = addPerson(person);
-      setMembers(updated);
-    }
-    setShowForm(false);
-    setEditTarget(undefined);
+function handleSave(person: Person) {
+  if (editTarget) {
+    updatePerson(person);
+  } else {
+    addPerson(person);
   }
+
+  setMembers(getStoredFamilyTree().members);
+  setShowForm(false);
+  setEditTarget(undefined);
+}
+  
 
   return (
     <div className="flex flex-col h-screen">
